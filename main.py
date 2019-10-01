@@ -14,6 +14,7 @@ from nltk.text import Text
 
 
 def read_text(path):
+    print(ssd)
     pass
 
 
