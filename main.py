@@ -29,6 +29,7 @@ def read_text(path):
     elif os.path.isdir(path):
         files = os.listdir(path)
         files.sort()
+        # combine contents of files under this dir
         for file in files:
             f = open(os.path.join(path, file))
             raw = raw + f.read()
@@ -50,7 +51,8 @@ def type_count(text):
 
 
 def sentence_count(text):
-    res = text.count(".")
+    # checking the token is one of '.' '?' '!' or '...', it's an end of sentence
+    res = text.count(".") + text.count('?') + text.count('!') + text.count('...')
     return res
 
 
@@ -61,6 +63,7 @@ def most_frequent_content_words(text):
     # remove stop words
     # remove punctuations and 's
     filtered = [(w, count) for (w, count) in list1 if w not in stop_words and w not in english_punctuations]
+    # get the most 25 frequent content words
     return filtered[:25]
 
 
@@ -73,6 +76,7 @@ def most_frequent_bigrams(text):
 
     blist = list(nltk.bigrams(list_new))
     fdist = FreqDist(blist)
+    # get the most 25 frequent biagrams
     return fdist.most_common(25)
 
 
@@ -92,7 +96,7 @@ class Vocabulary():
         syn = wn.synsets(word)[0]
         return syn.definition()
 
-    def quick(self, word):
+    def kwic(self, word):
         return self.text.concordance(word)
 
 
@@ -105,26 +109,47 @@ def compare_to_brown(text):
         genre = categories[i]
         # get all words in this category
         genre_text = brown.words(categories=genre)
+        # convert to set format and eliminate duplicated words
         genre_set = set(genre_text)
         # save words to array except stop words and punctuations
-        genre_arr.append({i for i in genre_set if i not in stop_words and i not in english_punctuations})
+        # genre_arr.append({i for i in genre_set if i not in stop_words and i not in english_punctuations})
+        genre_arr.append(genre_set)
 
     for i in range(0, len(categories)):
         genre = categories[i]
+        # get the set of each category
         genre_text = brown.words(categories=genre)
+
+        s = set(text[:])
+        s_new = {i for i in s if i not in stop_words and i not in english_punctuations}
+
         # too many words, only calculate common words
-        common = set(text[:]) & genre_arr[i]
+        common = s_new & genre_arr[i]
+
+        # convert count numbers to numpy array
         vector1 = get_frequncy_np_array(genre_text, common)
         vector2 = get_frequncy_np_array(text, common)
+
         # build cos similarity model
-        op = np.dot(vector1, vector2) / (np.linalg.norm(vector1) * (np.linalg.norm(vector2)))
-        print(genre, ' ', round(op, 2))
+        cos = np.dot(vector1, vector2) / (np.linalg.norm(vector1) * (np.linalg.norm(vector2)))
+        print(genre,': ',round(cos, 2))
+
+        # running time is very long
+        # this is the running result for grail.txt:
+        # adventure :  0.64
+        # fiction :  0.62
+        # government :  0.38
+        # humor :  0.74
+        # news :  0.37
+
 
 
 def get_frequncy_np_array(text, common):
     flist = []
     for word in common:
+        # add each word's count to the list
         flist.append(text.count(word))
+    # convert to numpy array
     return np.array(flist)
 
 
