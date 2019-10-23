@@ -62,7 +62,7 @@ def most_frequent_content_words(text):
 
     # remove stop words
     # remove punctuations and 's
-    filtered = [(w, count) for (w, count) in list1 if w not in stop_words and w not in english_punctuations]
+    filtered = [(w, count) for (w, count) in list1 if w.lower() not in stop_words and w not in english_punctuations]
     # get the most 25 frequent content words
     return filtered[:25]
 
