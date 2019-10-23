@@ -101,22 +101,18 @@ class Text(object):
 
         r_list = self.tokens
         count = 0            # record count numbers
-        str = ''
         res = []
         # use Math methods
         for index in range(len(r_list)):
             if (index == 0) :
                 count = count + 1
-                str = str + r_list[index] + ' '
                 continue
             if (r_list[index] == r_list[index-1]):
                 count = count + 1
-                str = str + r_list[index] + ' '
             else:
                 if (count >= 3):
-                    str = str[:len(str)-1]
+                    str = r_list[index-1] + ' ' + r_list[index-1] + ' ' + r_list[index-1]
                     res.append(str)
-                str = r_list[index] + ' '
                 count = 1
         res = list(set(res))
         res.sort()
@@ -133,10 +129,14 @@ class Vocabulary(object):
         return self.tokens.count(word)
 
     def pos(self, word):
+        if len(wn.synsets(word)) == 0:
+            return None
         syn = wn.synsets(word)[0]
         return syn.pos()
 
     def gloss(self, word):
+        if len(wn.synsets(word)) == 0:
+            return None
         syn = wn.synsets(word)[0]
         return syn.definition()
 
